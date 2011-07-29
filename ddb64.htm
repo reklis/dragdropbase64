@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html>
+<div id="dropbox"><span id="droplabel">Drop file here...</span></div>
+<div id="toolbox">
+	<div>Raw Data:<br/><textarea id="rawBlob"></textarea></div>
+	<div>As Base64 String:<br/><textarea id="base64clob"></textarea></div>
+	<div>As Base64 Data Url:<br/><a id="dataurl" href="#" target="_new">linked resource</a></div>
+	<div>Image Preview:<br/><img id="preview" alt="[ preview will display here ]" /></div>
+</div>
+
+<script type="text/javascript">
+function selectAll(evt) {
+	console.log(evt);
+	evt.srcElement.select()
+}
+
+document.getElementById("rawBlob").addEventListener("click", selectAll);
+document.getElementById("base64clob").addEventListener("click", selectAll);
+
+var dropbox = document.getElementById("dropbox");
+ 
+// init event handlers
+dropbox.addEventListener("dragenter", dragEnter, false);
+dropbox.addEventListener("dragexit", dragExit, false);
+dropbox.addEventListener("dragover", dragOver, false);
+dropbox.addEventListener("drop", drop, false);
+
+function noopHandler(evt) {
+  evt.stopPropagation();
+  evt.preventDefault();
+}
+
+function dragEnter(evt) {
+	noopHandler(evt);
+}
+
+function dragExit(evt) {
+	noopHandler(evt);
+}
+
+function dragOver(evt) {
+	noopHandler(evt);
+}
+
+function drop(evt) {
+	noopHandler(evt);
+		 
+	var files = evt.dataTransfer.files;
+	var count = files.length;
+	 
+	// Only call the handler if 1 or more files was dropped.
+	if (count > 0)
+		handleFiles(files);
+}
+
+function handleFiles(files) {
+	var file = files[0];
+	console.log(file);
+	document.getElementById("droplabel").innerHTML = file.name + "<br/>Type: " + ((file.type.length==0)?"Unknown": file.type) + "<br/>Size: " + file.size/1024 + "KB";
+	 
+	var reader = new FileReader();
+	
+	// init the reader event handlers
+	reader.onloadend = handleReaderLoadEnd;
+	reader.onerror = handleReaderError;
+	 
+	// begin the read operation
+	reader.readAsDataURL(file);
+	
+	var base64converter = new FileReader();
+	base64converter.onerror = handleReaderError;
+	base64converter.onloadend = handleEncoding;
+	base64converter.readAsBinaryString(file);
+}
+
+function handleReaderError(evt) {
+	console.log(evt);
+	
+	alert("Reader Error Code: " + evt.target.result.error.code);
+}
+
+function handleReaderLoadEnd(evt) {
+  var img = document.getElementById("preview");
+  console.log(evt);
+  img.src = evt.target.result;
+  
+  var link = document.getElementById("dataurl");
+  link.href = evt.target.result;
+}
+
+function handleEncoding(evt) {
+	console.log(evt.target.result);
+	var b64encoded = window.btoa(evt.target.result);
+	
+	var raw = document.getElementById("rawBlob");
+	raw.innerHTML = evt.target.result;
+	
+	var clob = document.getElementById("base64clob");
+	clob.innerHTML = b64encoded;
+}
+
+
+</script>
+
+<style type="text/css">
+#toolbox {
+	width: 300px;
+	float: right;
+}
+
+#dropbox {
+	width: 500px;
+	height: 500px;
+	border: 2px solid #DDD;
+	-moz-border-radius: 8px;
+	-webkit-border-radius: 8px;
+	background-color: #c0c0c0;
+	text-align: center;
+	color: #0e0e0es;
+	font-size: 2em;
+	font-family: Arial, sans-serif;
+	float: left;
+}
+ 
+#droplabel {
+	position: relative;
+	top: 40%;
+}
+
+textarea {
+	width:100px;
+	height:100px;
+}
+
+</style>
+
+</html>
